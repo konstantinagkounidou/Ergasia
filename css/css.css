@@ -1,0 +1,32 @@
+﻿body{
+
+ background-color: 	#FFDAB9;
+ font-family:times;
+ color:	#000000;
+
+}
+
+a:link{
+	color: 	#000000;
+	text-decoration: none;
+}
+
+a:visited{
+	color:black;
+	text-decoration: none;
+}
+
+a:hover{
+	color:blue;
+	text-decoration: none;
+	underline;
+}
+h4{
+	color:	#FF6347;
+}
+p{
+	letter-spacing:2;
+	margin-left:50;
+	font-align:right;
+	color:BlueViolet;
+}
