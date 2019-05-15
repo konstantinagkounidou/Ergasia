@@ -17,7 +17,7 @@
   
   <body>
    <center>
-   <a href="Coldplay.php"> Αρχική|</a>
+   <a href="index.php"> Αρχική|</a>
    <a href="members.php"> Μέλη |</a>  
    <a href="music.php">Μουσική | </a>  
    <a href="contact.php" > Επικοινωνία |</a> 
