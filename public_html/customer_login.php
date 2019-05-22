@@ -68,9 +68,10 @@
 		//t($c_id);
 		
 		if($check_customer==0){
-		
-		echo "<script>document.getElementById('mesg').innerHTML = 'Λάθος Στοιχεία';</script>";
-		exit();
+		    
+		    jsm('Λάθος Στοιχεία');
+		    //echo "<script>document.getElementById('mesg').innerHTML = 'Λάθος Στοιχεία';</script>";
+		    exit();
 		}
 		$ip = getIp(); 
 		
@@ -87,7 +88,7 @@
 		//echo "<script>alert('Συνδέθηκες επιτυχώς!')</script>";
 		echo "<script>window.open('customer/my_account.php','_self')</script>";
 		
-		}
+		}/*
 		else {
 		$_SESSION['customer_email']=$c_email; 
 		
@@ -95,7 +96,7 @@
 		echo "<script>window.open('checkout.php','_self')</script>";
 		
 		
-		}
+		}*/
 	}
 	
 	

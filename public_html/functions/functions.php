@@ -16,7 +16,17 @@ $con = mysqli_connect("localhost","id9568648_eshop","eshop","id9568648_eshop");
     return $ip;
 }
   
-  
+function sqlsel1($a,$b,$c,$d){
+
+	global $con; 
+	
+    $get_items = "select * from $a where $b=$c";
+	$run_items = mysqli_query($con, $get_items); 
+	while($items=mysqli_fetch_array($run_items)){
+	    $item_qty=$items[$d];
+	}
+	return $item_qty;
+}
   
 //creating the shopping cart
 function cart(){
@@ -28,7 +38,9 @@ function cart(){
 		$ip = getIp();
 		//t($ip);
 		$pro_id = $_GET['add_cart'];
-        
+        $pro_stock=sqlsel1('products','product_id',$pro_id,'stock');
+        //$pro_qty=sqlsel1('cart','p_id',$pro_id,'qty');
+        //t($pro_stock);
         if(isloggedin()){
             $c_id=$_SESSION['cid'];
 			$check_pro = "select * from cart where customer_id='$c_id' AND p_id='$pro_id'";
@@ -38,36 +50,53 @@ function cart(){
 		}
         
 		$run_check = mysqli_query($con, $check_pro); 
-		
+		while($items=mysqli_fetch_array($run_check)){
+		    $pro_qty=$items['qty'];
+		}
 		if(mysqli_num_rows($run_check)!=0){
 			
 				
 		    if(isset($_GET['add_cart_count'])){
 		        $count=$_GET['add_cart_count'];
+		        
 			}
 		    else{
 		        $count=1;
 		    }
+			//$new_count=$pro_qty+$count;
+			if($count>$pro_stock){
+			    print_text('Μή αρκετό απόθεμα!','error');
+			    exit();
+			}
+			else if($count<-1){
+			    exit();
+			}
 			
 			if(isloggedin()){
 			    //$c_id=$_SESSION['cid'];
+			    
 			    $update_pro ="update cart set qty=qty+$count where customer_id='$c_id' AND p_id='$pro_id' ";
 			    mysqli_query($con,$update_pro);
-			
-		    }
+			}
 	    	else{
 			    $update_pro ="update cart set qty=qty+$count where ip_add='$ip' AND customer_id='0' AND p_id='$pro_id' ";
 			    mysqli_query($con,$update_pro);
-			
-		    }
-		
-			
+			}
+	        
+	        $update_stock="update products set stock=stock-$count where product_id='$pro_id' ";
+		    mysqli_query($con,$update_stock);
+		    
 			echo "<script>window.open('cart.php','_self')</script>";
 		}
 			
 			//echo "<script>alert('$a $b $c')</script>";
 		
     	else {
+    	    if($pro_stock<=0){
+            print_text('Μη αρκετό απόθεμα!','error');
+            exit();
+            }
+            
     		if(isloggedin()){
     		    $c_id=$_SESSION['cid'];
     		    $insert_pro = "insert into cart (p_id,ip_add,qty,customer_id) values ('$pro_id','$ip','1','$c_id')";
@@ -80,9 +109,14 @@ function cart(){
     		    
     		}
     		
-    		
+	        $update_stock="update products set stock=stock-1 where product_id='$pro_id' ";
+		    mysqli_query($con,$update_stock);
+		    
     		echo "<script>window.open('eshop.php','_self')</script>";
     	}
+    
+        
+        
     	
 	}	
     
@@ -259,6 +293,72 @@ function getPro(){
 	}
 }
 
+function rep(){
+    global $con;
+    $delete_product = "delete from cart where qty<='0' ";
+	$run_delete = mysqli_query($con, $delete_product); 
+        			
+}
+
+function payment(){
+    if(!isloggedin()){
+		$a='Παραγγελία ως επισκέπτης';
+	}
+	else {
+	    $a='Εκτέλεση παραγγελίας';
+	}
+	print_button($a,'cart.php?c1=1','a');
+    print_button('Πίσω στο καλάθι','cart.php','b');
+	
+}
+
+function cnd($a){
+    global $con; 
+    $ip = getIp();
+    	
+    if(isset($_GET['c1'])){
+        $c1=$_GET['c1'];
+        if($c1=='1' && $a=='1'){
+            if(isloggedin()){
+                $ce=$_SESSION['cid'];
+    	    
+                $deliv="delete from cart where customer_id='$ce'";
+    	        $run_deliv=mysqli_query($con, $deliv);
+    	        
+    	    }
+            else{
+                
+                $deliv="delete from cart where ip_add='$ip'AND customer_id='0' ";
+    	        $run_deliv=mysqli_query($con, $deliv);
+    	        
+    	    }
+    	    
+            print_text('Η παραγγελία σας πραγματοποιήθηκε επιτυχώς!','ctext');
+    	}
+    	else if($c1==2 && $a==2){
+    	    include("customer_login.php");
+    	}
+    	else if($c1==3 && $a==3){
+    	    payment();    
+    	}
+    }
+    
+}
+
+function print_text($a,$b){
+    echo "<p class='$b' >$a</p>";
+}
+
+function print_button($a,$b,$c){
+    echo
+        "<a href= '$b' class='button $c' style='font-size: 20px;' >$a</a>";
+}
+
+function jsm($a){
+    echo "<script>document.getElementById('mesg').innerHTML = '$a';</script>";
+		
+}
+
 function t($a){
 	//$name=$_GET['name'];
 	echo "<script>alert('$a')</script>";
@@ -336,7 +436,7 @@ function dispStats(){
 		echo "<b style='color:yellow'>Καλάθι: </b>Συνολικά αντικείμενα: ";  total_items();
 		echo "<b>Συνολικό ποσό: </b>"; total_price(); 
 	//	echo "<b>___</b>";
-		echo "<a href='checkout.php' class='button b' >Είσοδος </a>";
+		echo "<a href='checkout.php?c1=2' class='button b' >Είσοδος </a>";
 		
 	}
 	
@@ -344,8 +444,27 @@ function dispStats(){
 
 }
 
+function pro_stock_est($a){
+    $stock=sqlsel1('products','product_id',$a,'stock');
+    $c1=10;
+    $c2=100;
+    if($stock==1){
+        $out='Τελευταίο!';
+    }
+    else if($stock>1 && $stock<=$c1){
+        $out='Ελάχιστο!';
+    }
+    else if($stock>$c1){
+        $out='Επαρκές';
+    }
+    else{
+        $out='Εξαντλήθηκε!';
+    }
+    return $out;
+}
+
 function proDisp($pro_id,$pro_title,$pro_image,$pro_price,$pro_desc){	
-	
+	$stock=pro_stock_est($pro_id);
 	echo "
 			<div class='display'>
 			
@@ -357,14 +476,17 @@ function proDisp($pro_id,$pro_title,$pro_image,$pro_price,$pro_desc){
 				
 				<b>Περιγραφή προιόντος:   </b> $pro_desc 
 				
+				<p><b> Απόθεμα προιόντος: $stock </b></p> .
+				
 				<a href='eshop.php' style='float:left;'>Πίσω</a>
 				
-				<a href='eshop.php?pro_id=$pro_id'><button style='float:right'>Προσθήκη στο καλάθι</button></a>
+				<a href='eshop.php?add_cart=$pro_id'><button style='float:right'>Προσθήκη στο καλάθι</button></a>
 			
 			</div>
 	
 	
 	";
+	//cart();
 }
 	
 	

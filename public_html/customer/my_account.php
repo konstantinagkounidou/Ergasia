@@ -12,7 +12,7 @@ session_start();
 <html>
 	<head>
 		<title>Κατάστημα Coldplay</title>
-	
+	<meta http-equiv="content-type" content="text/html; charset=utf-8"></meta>
 		
 	<link rel="stylesheet" href="../styles/style.css" media="all" /> 
 	</head>
@@ -87,11 +87,9 @@ session_start();
 						
 						$run_img = mysqli_query($con, $get_img); 
 						
-						$row_img = mysqli_fetch_array($run_img); 
-						
-						//$c_image = $row_img['customer_image'];
-						
-						$c_name = $row_img['customer_name'];
+						while($row_img = mysqli_fetch_array($run_img)){
+						    $c_name=$row_img['customer_name'];
+						}
 						
 				}
 				

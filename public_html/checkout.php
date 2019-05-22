@@ -53,7 +53,7 @@ session_start();
 		
 			<div id="sidebar">
 			
-				<div id="sidebar_title">Categories</div>
+				<div id="sidebar_title">Κατηγορίες</div>
 				
 				<ul id="cats">
 				
@@ -80,15 +80,7 @@ session_start();
 				<div id="products_box">
 				
 				<?php 
-				if(!isset($_SESSION['customer_email'])){
-					
-					include("customer_login.php");
-				}
-				else {
-				
-				include("payment.php");
-				
-				}
+				cnd($_GET['c1']);
 				
 				?>
 				

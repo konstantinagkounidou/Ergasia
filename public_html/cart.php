@@ -9,6 +9,8 @@ session_start();
  include("functions/functions.php");
 
  include("includes/db.php");
+ cnd('1');
+    	
 ?>
 <html>
 	<head>
@@ -89,6 +91,7 @@ session_start();
 					</tr>
 			
 		<?php 
+		rep();
 		$total = 0;
 		
 		global $con; 
@@ -96,15 +99,11 @@ session_start();
     	
     	if(isloggedin()){
     	    $ce=$_SESSION['cid'];
-    	    //$cp=$_SESSION['customer_password'];
     	    $sel_price = "select * from cart where customer_id='$ce'";
     	}
     	else{
-    	    //$ip = getIp(); 
-    		//t($ip);
-    		$sel_price = "select * from cart where ip_add='$ip'AND customer_id='0' ";
+    	    $sel_price = "select * from cart where ip_add='$ip'AND customer_id='0' ";
     	}
-    		
 		$run_price = mysqli_query($con, $sel_price); 
 		
 		while($p_price=mysqli_fetch_array($run_price)){
@@ -113,28 +112,14 @@ session_start();
 			
 			$pro_price = "select * from products where product_id='$pro_id'";
 			
-			if(isloggedin()){
-			    
-			    $qp= "select * from cart where p_id='$pro_id'AND customer_id='$ce' ";
-			
-			}
-			else{
-		    	$qp= "select * from cart where p_id='$pro_id' ";
-			
-			}
-			
-			$run_qp= mysqli_query($con,$qp);
-			
-			$qty1= mysqli_fetch_array($run_qp);
-			
+			$qty=$p_price['qty'];
 			
 			$run_pro_price = mysqli_query($con,$pro_price); 
 			
-			while ($pp_price = mysqli_fetch_array($run_pro_price)){
+			while ($pp_price = mysqli_fetch_array($run_pro_price)  ){
 				//echo "<script>alert('$pro_id')</script>";
-				$qty=$qty1['qty'];
 				
-				if($qty==0){
+				if($qty<=0){
 				    break;
 				}
 				
@@ -187,7 +172,7 @@ session_start();
 					<tr align="center">
 						<td colspan="2"><input type="submit" href="cart.php?add_cart=$pro_id?add_cart_count=$qty" name="update_cart" value="Ανανέωση καλαθιού"/></td>
 						<td><input type="submit" name="continue" value="Συνέχεια αγοράς" /></td>
-						<td><button><a href="checkout.php" style="text-decoration:none; color:black;">Πληρωμή</a></button></td>
+						<td><button><a href="checkout.php?c1=3" style="text-decoration:none; color:black;">Πληρωμή</a></button></td>
 					</tr>
 					
 				</table> 
@@ -195,8 +180,6 @@ session_start();
 			</form>
 			
 	<?php 
-			//$p=$pro_list[0,0,0];
-			//echo "<script>alert('$p')</script>";
 						 
 	function updatecart(){
 		
@@ -209,9 +192,19 @@ session_start();
 			if(isloggedin()){
 			    $c_id=$_SESSION['cid'];
 			    foreach($_POST['remove'] as $remove_id){
-			
+			        
+			        $check_pro="select * from cart where customer_id='$c_id' AND p_id='$remove_id'";
+			        $run_check = mysqli_query($con, $check_pro); 
+            		while($items=mysqli_fetch_array($run_check)){
+            		    $pro_qty=$items['qty'];
+            		}
+        			        
         			$delete_product = "delete from cart where p_id='$remove_id' AND customer_id='$c_id' ";
         			$run_delete = mysqli_query($con, $delete_product); 
+        			
+        			$update_stock="update products set stock=stock+$pro_qty where product_id='$remove_id' ";
+    			    mysqli_query($con,$update_stock);
+    			    
         			
         			if($run_delete){
         			
@@ -224,10 +217,19 @@ session_start();
 			}
 			else{
 			    foreach($_POST['remove'] as $remove_id){
-			
+			        
+			        $check_pro="select * from cart where customer_id='$c_id' AND p_id='$remove_id'";
+			        $run_check = mysqli_query($con, $check_pro); 
+            		while($items=mysqli_fetch_array($run_check)){
+            		    $pro_qty=$items['qty'];
+            		}
+        			   
         			$delete_product = "delete from cart where p_id='$remove_id' AND ip_add='$ip'AND customer_id='0' ";
         			$run_delete = mysqli_query($con, $delete_product); 
         			
+        			$update_stock="update products set stock=stock+$pro_qty where product_id='$remove_id' ";
+    			    mysqli_query($con,$update_stock);
+    			    
         			if($run_delete){
         			
         			echo "<script>window.open('cart.php','_self')</script>";
@@ -248,7 +250,7 @@ session_start();
 			
 	}
 	echo @$up_cart = updatecart();
-	
+	//updatecart();
 	?>
 
 				
